@@ -190,7 +190,7 @@ def get_perf_metrics():
 def delete_half_metric_records_weekly():
     """This method will do periodic cleanup of inventord DB performance metrics data
     """
-    pass
+    delte_half_data_from_performace_metric_table()
 
 
 def controller(category_of_poll=None):
@@ -202,7 +202,8 @@ categoryToFuntionMap = {"chassis": get_chassis_summary_data,
                         "ports": get_chassis_port_data,
                         "licensing": get_chassis_licensing_data,
                         "sensors": get_sensor_information,
-                        "perf": get_perf_metrics}
+                        "perf": get_perf_metrics,
+                        "data_purge": delete_half_metric_records_weekly}
 
 
 
@@ -220,6 +221,11 @@ def start_poller(category, interval):
         if poll_interval:
             interval = poll_interval[category]
         categoryToFuntionMap[category]()
+        
+        # Data Purge would be in days
+        if category == "data_purge":
+            interval = int(interval) * 24 * 60 * 60
+        
         time.sleep(int(interval))
 
 if __name__ == '__main__':
