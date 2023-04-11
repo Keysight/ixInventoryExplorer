@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import csv
+import csv
 
 def _get_db_connection():
     conn = sqlite3.connect('inventory.db')
@@ -173,14 +174,8 @@ def getChassistypeFromIp(chassisIp):
     if posts:
         return  posts['type_of_chassis']
     return "NA"
+    
 
-def is_input_in_correct_format(ip_pw_list):
-    for line in ip_pw_list.split("\n"):
-        print(line)
-        if len(line.split(",")) != 4:
-            return False
-        return True
-        
 def write_username_password_to_database(list_of_un_pw):
     conn = _get_db_connection()
     cur = conn.cursor()
@@ -287,5 +282,3 @@ def delte_half_data_from_performace_metric_table():
     cur.close()
     conn.close()
     return "Half Records Deleted"
-    
-    
