@@ -108,5 +108,6 @@ create_poll_settings_table = """CREATE TABLE IF NOT EXISTS poll_setting (
                                 sensors INTEGER ,
                                 perf INTEGER,
                                 licensing INTEGER,
+                                data_purge INTEGER,
                                 alertMonitor INTEGER
                                 );"""

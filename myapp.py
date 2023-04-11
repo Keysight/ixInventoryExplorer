@@ -29,8 +29,11 @@ def uploadConfig():
 @app.post('/uploader')
 def processInput():
     ip_pw_list = request.form['text']
-    write_username_password_to_database(ip_pw_list)
-    return redirect('/')
+    if is_input_in_correct_format(ip_pw_list):
+        write_username_password_to_database(ip_pw_list)
+        return redirect('/')
+    else:
+        return "<h3> Incorrect Input Formatting. Please check youe csv format and <a href='/uploadConfig'> retry</a></h3>"
     
 @app.post('/setPollingIntervals')
 def setPollingIntervals():
@@ -40,7 +43,8 @@ def setPollingIntervals():
     sensors = request.form['sensors']
     licensing = request.form['licensing']
     perf = request.form['perf']
-    write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf)
+    data_purge = request.form['purge']
+    write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf, data_purge)
     return redirect('/')
     
 @app.get('/')

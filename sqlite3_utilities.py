@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import csv
 
 def _get_db_connection():
     conn = sqlite3.connect('inventory.db')
@@ -172,8 +173,12 @@ def getChassistypeFromIp(chassisIp):
     if posts:
         return  posts['type_of_chassis']
     return "NA"
-    
 
+def is_input_in_correct_format(ip_pw_list):
+    for line in ip_pw_list.split("\n"):
+        if len(line.split(",")) != 4:
+            return False
+        
 def write_username_password_to_database(list_of_un_pw):
     conn = _get_db_connection()
     cur = conn.cursor()
@@ -187,7 +192,9 @@ def write_username_password_to_database(list_of_un_pw):
     cur.close()
     conn.commit()
     conn.close()
-
+   
+    
+    
 def read_username_password_from_database():
     conn = _get_db_connection()
     cur = conn.cursor()
@@ -202,7 +209,6 @@ def read_username_password_from_database():
 
 def creat_config_dict(list_of_un_pw):
     config_now = read_username_password_from_database()
-    print(config_now)
     # Converting String to List
     config = list_of_un_pw.split("\n")
     if config_now:
@@ -244,13 +250,13 @@ def get_perf_metrics_from_db(ip):
     conn.close()
     return posts
     
-def write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf):
+def write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf, data_purge):
     conn = _get_db_connection()
     cur = conn.cursor()
     
     cur.execute("DELETE from poll_setting")
-    cur.execute(f"""INSERT INTO poll_setting (chassis, cards, ports, sensors, perf, licensing) VALUES 
-                ({int(chassis)},{int(cards)},{int(ports)},{int(sensors)},{int(perf)},{int(licensing)})""")
+    cur.execute(f"""INSERT INTO poll_setting (chassis, cards, ports, sensors, perf, licensing, data_purge) VALUES 
+                ({int(chassis)},{int(cards)},{int(ports)},{int(sensors)},{int(perf)},{int(licensing)}, {int(data_purge)})""")
     cur.close()
     conn.commit()
     conn.close()
@@ -264,3 +270,25 @@ def read_poll_setting_from_database():
     conn.close()
     if posts:
         return posts
+
+def delte_half_data_from_performace_metric_table():
+    """This funtion will delete half the records from performace metrics data"""
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    
+    query = f"""DELETE FROM chassis_utilization_details 
+                WHERE rowid IN 
+                (SELECT rowid FROM chassis_utilization_details  ORDER BY lastUpdatedAt_UTC DESC
+                LIMIT (SELECT COUNT(*)/2 FROM chassis_utilization_details));"""
+    cur.execute(query)
+    conn.commit()
+    
+    cur.execute("SELECT COUNT(*) FROM chassis_utilization_details;")
+    numberOfRows = cur.fetchone()[0]
+    print(numberOfRows)
+    cur.close()
+    conn.close()
+    
+    return "Half Records Deleted"
+    
+    

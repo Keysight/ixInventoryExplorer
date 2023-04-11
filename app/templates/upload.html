@@ -13,7 +13,7 @@
       <form id="uploader" action = "/uploader", method="post">
         <label for="text-area">Enter your configuration in format (<i>Action,chassisIp,username,password</i>)</label>
         <br>
-            <textarea id="text-area" placeholder="10.36.235.164,admin,admin" name="text" rows="10" cols="500" style="max-width:100%;"></textarea>
+            <textarea id="text-area" placeholder="ADD,10.36.235.164,admin,admin" name="text" rows="10" cols="500" style="max-width:100%;"></textarea>
         <br>
          <input class="btn btn-primary mb-3"  type = "submit" onClick="confirmSubmit()" value="Get all data and Proceed"/>
       </form>
@@ -30,30 +30,36 @@
         <h2>Edit  polling intervals</h2>
         <form action="/setPollingIntervals", method="post">
             <div class="form-group">
-            <label for="chassis">Chassis Summary: </label>
-            <input type="input" class="form-control" id="chassis" placeholder="Enter chassis summary polling interval" name="chassis" placeholder="60"></input>
+            <label for="chassis">Chassis Summary(Seconds)</label>
+            <input type="input" class="form-control" id="chassis" placeholder="Enter chassis summary polling interval" name="chassis" value="60"></input>
             </div>
             <div class="form-group">
-            <label for="chassis">Chassis Cards: </label>
-            <input type="input" class="form-control" id="cards" placeholder="Enter cards summary polling interval" name="cards" placeholder="60"></input>
+            <label for="chassis">Chassis Cards(Seconds)</label>
+            <input type="input" class="form-control" id="cards" placeholder="Enter cards summary polling interval" name="cards" value="60"></input>
             </div>
             <div class="form-group">
-            <label for="chassis">Chassis Ports:</label>
-            <input type="input" class="form-control" id="ports" placeholder="Enter chassis ports polling interval" name="ports" placeholder="60"></input>
+            <label for="chassis">Chassis Ports(Seconds)</label>
+            <input type="input" class="form-control" id="ports" placeholder="Enter chassis ports polling interval" name="ports" value="60"></input>
             </div>
             <div class="form-group">
-            <label for="chassis">Chassis Sensors:</label>
-            <input type="input" class="form-control" id="sensors" placeholder="Enter chassis sensors polling interval" name="sensors" placeholder="60"></input>
+            <label for="chassis">Chassis Sensors(Seconds)</label>
+            <input type="input" class="form-control" id="sensors" placeholder="Enter chassis sensors polling interval" name="sensors" value="60"></input>
             </div>
             <div class="form-group">
-            <label for="chassis">Chassis Licensing:</label>
-            <input type="input" class="form-control" id="licensing" placeholder="Enter chassis licensin polling interval" name="licensing" placeholder="60"></input>
+            <label for="chassis">Chassis Licensing(Seconds)</label>
+            <input type="input" class="form-control" id="licensing" placeholder="Enter chassis licensin polling interval" name="licensing" value="900"></input>
             </div>
             <div class="form-group">
-            <label for="chassis">Chassis Performance Metrics:</label>
-            <input type="input" class="form-control" id="perf" placeholder="Enter chassis perf metrics polling interval" name="perf" placeholder="60"></input>
+            <label for="chassis">Chassis Performance Metrics(Seconds)</label>
+            <input type="input" class="form-control" id="perf" placeholder="Enter chassis perf metrics polling interval" name="perf" value="60"></input>
             </div>
-            <button type="submit" class="btn btn-dark">Update Polling Intervals</button>
+            <div class="form-group">
+            <label for="chassis">Data Purge(Days)</label>
+                <input type="input" class="form-control" id="purge" placeholder="Enter chassis perf metrics polling interval" name="purge" value="60"></input>
+            </div>
+
+                <button type="submit" class="btn btn-dark">Update Polling Intervals</button>
+        </div>
         </form>
         </div>
 </section>
