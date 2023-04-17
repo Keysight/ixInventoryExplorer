@@ -226,7 +226,6 @@ def start_poller(category, interval):
         if category == "data_purge":
 
             interval = int(interval) * 24 * 60 * 60
-
         time.sleep(int(interval))
 
 if __name__ == '__main__':
