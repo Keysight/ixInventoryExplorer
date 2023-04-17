@@ -225,7 +225,10 @@ def start_poller(category, interval):
         # Data Purge would be in days
         if category == "data_purge":
             interval = int(interval) * 24 * 60 * 60
+<<<<<<< HEAD
+=======
         
+>>>>>>> ae48593 (Added in purge to purge half data every 24 hours)
         time.sleep(int(interval))
 
 if __name__ == '__main__':
