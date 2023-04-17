@@ -24,6 +24,16 @@ from datetime import datetime, timezone
 def get_sensors_information(session):
     out = session.get_sensors()
 
+def get_chassis_os(session):
+    try:
+        port_list = session.get_ports().data
+        #linkState field is only in Linux Based Chassis
+        if 'linkState' in  port_list[0]:
+            return "Linux"
+        return "Windows"
+    except:
+        return "NA"
+
 def convert_size(size_bytes):
    if size_bytes == 0:
        return "0B"
@@ -67,7 +77,7 @@ def get_chassis_information(session):
     mem_bytes = "NA"
     mem_bytes_total = "NA"
     cpu_pert_usage =  "NA"
-    os = "Linux"
+    os = get_chassis_os(session)
     
     chassisInfo = session.get_chassis()
     chassis_perf_dict = {}
@@ -78,7 +88,7 @@ def get_chassis_information(session):
         mem_bytes_total = convert_size(perf["memoryTotalBytes"])
         cpu_pert_usage = perf["cpuUsagePercent"]
     except Exception:
-        os = "Windows"
+       pass
         
     
     chassis_data = json.loads(json.dumps(chassisInfo.data[0]))

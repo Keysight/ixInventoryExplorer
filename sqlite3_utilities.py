@@ -176,8 +176,10 @@ def getChassistypeFromIp(chassisIp):
 
 def is_input_in_correct_format(ip_pw_list):
     for line in ip_pw_list.split("\n"):
+        print(line)
         if len(line.split(",")) != 4:
             return False
+        return True
         
 def write_username_password_to_database(list_of_un_pw):
     conn = _get_db_connection()
@@ -282,13 +284,8 @@ def delte_half_data_from_performace_metric_table():
                 LIMIT (SELECT COUNT(*)/2 FROM chassis_utilization_details));"""
     cur.execute(query)
     conn.commit()
-    
-    cur.execute("SELECT COUNT(*) FROM chassis_utilization_details;")
-    numberOfRows = cur.fetchone()[0]
-    print(numberOfRows)
     cur.close()
     conn.close()
-    
     return "Half Records Deleted"
     
     

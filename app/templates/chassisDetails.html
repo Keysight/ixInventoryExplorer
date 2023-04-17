@@ -70,7 +70,11 @@
                <button onclick='addTag("{{entry["chassisIp"]}}")' type="button" class="btn btn-primary btn-sm">+</button>
                <button onclick='removeTag("{{entry["chassisIp"]}}")' type="button" class="btn btn-primary btn-sm">X</button>
             </td>
-            <td><button type="button" class="btn btn-danger" onclick='myFunction("{{entry["chassisIp"]}}")'> Get IxOS Logs</button></td>
+            {% if entry["os"] == "Linux" %}
+               <td><button type="button" class="btn btn-danger" onclick='myFunction("{{entry["chassisIp"]}}")'> Get IxOS Logs</button></td>
+            {% else %}
+               <td><button type="button" class="btn btn-danger">NA for Windows Chassis</button></td>
+            {% endif %}
          </tr>
          {% endfor %}
       </tbody>
