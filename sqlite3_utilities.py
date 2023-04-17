@@ -287,3 +287,4 @@ def is_input_in_correct_format(ip_pw_list):
     for line in ip_pw_list.split("\n"):
         if len(line.split(",")) != 4:
             return False
+        return True
