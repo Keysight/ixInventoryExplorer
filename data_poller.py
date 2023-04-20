@@ -102,6 +102,7 @@ def get_chassis_port_data():
                         'freePorts': 'NA',
                         'chassisIp': chassis["ip"],
                         'typeOfChassis': 'NA'
+                        'transmitState': 'NA'
                     }]
                     port_list_details.append(a)
             write_data_to_database(
