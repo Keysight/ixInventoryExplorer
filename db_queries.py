@@ -44,6 +44,7 @@ create_port_details_records_sql = """CREATE TABLE IF NOT EXISTS chassis_port_det
                                         'totalPorts' TEXT,  
                                         'ownedPorts' TEXT,
                                         'freePorts' TEXT,
+                                        'transmitState' TEXT,
                                         'lastUpdatedAt_UTC' TEXT
                                         );"""
                                         
