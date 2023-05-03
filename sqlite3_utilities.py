@@ -1,15 +1,15 @@
 import sqlite3
 import json
-import csv
-import csv
 
 def _get_db_connection():
+    """Get connection to sqlite3 database"""
     conn = sqlite3.connect('inventory.db')
     conn.row_factory = sqlite3.Row
     return conn
 
 
 def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
+    """Write polled data inside sqlite3 DB"""
     tags = ""
     conn = _get_db_connection()
     cur = conn.cursor()
@@ -52,7 +52,6 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                 
         if table_name == "chassis_card_details":
             for rcd in record:
-                print(rcd)
                 if ip_tags_dict:
                     tags = ip_tags_dict.get(record["chassisIp"]) #This is a list
                     if tags:
@@ -85,7 +84,6 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                                  '{rcd["value"]}','{unit}', datetime('now'))""")
           
         if table_name == "chassis_utilization_details":
-            print({record["lastUpdatedAt_UTC"]})
             cur.execute(f"""INSERT INTO {table_name} (chassisIp,mem_utilization,cpu_utilization,lastUpdatedAt_UTC) VALUES 
                             ('{record["chassisIp"]}', '{record["mem_utilization"]}', '{record["cpu_utilization"]}', '{record["lastUpdatedAt_UTC"]}')""")
             
@@ -94,6 +92,7 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
     conn.close()
 
 def read_data_from_database(table_name=None):
+    """Write polled data from sqlite3 DB"""
     conn = _get_db_connection()
     cur = conn.cursor()
     records = cur.execute(f"SELECT * FROM {table_name}").fetchall()
@@ -102,7 +101,8 @@ def read_data_from_database(table_name=None):
     return records
 
 
-def writeTags(ip, tags, type_of_update=None, operation=None):
+def write_tags(ip, tags, type_of_update=None, operation=None):
+    """Write tags to sqlite3 DB"""
     updated_tags = ""
     if type_of_update == "chassis":
         table = 'user_ip_tags'
@@ -117,7 +117,7 @@ def writeTags(ip, tags, type_of_update=None, operation=None):
     cur = conn.cursor()
     
     # Get Present Tags from DB
-    ip_tags_dict = getTagsFromCurrentDatabase(type_of_update)
+    ip_tags_dict = read_tags(type_of_update)
     currenttags = ip_tags_dict.get(ip) # This is a list    
     new_tags = tags.split(",")
     
@@ -141,7 +141,8 @@ def writeTags(ip, tags, type_of_update=None, operation=None):
     conn.close()
     return "Records successfully updated"
         
-def getTagsFromCurrentDatabase(type_of_update=None):
+def read_tags(type_of_update=None):
+    """Read tags to sqlite3 DB"""
     ip_tags_dict = {}
     if type_of_update == "chassis":
         table = "user_ip_tags"
@@ -163,7 +164,8 @@ def getTagsFromCurrentDatabase(type_of_update=None):
     return ip_tags_dict
 
 
-def getChassistypeFromIp(chassisIp):
+def get_chassis_type_from_ip(chassisIp):
+    """Get type of Ixia Chassis from IP"""
     conn = _get_db_connection()
     cur = conn.cursor()
     
@@ -177,6 +179,7 @@ def getChassistypeFromIp(chassisIp):
     
 
 def write_username_password_to_database(list_of_un_pw):
+    """Write user information about ixia servers into database"""
     conn = _get_db_connection()
     cur = conn.cursor()
     user_pw_dict = []
@@ -193,9 +196,10 @@ def write_username_password_to_database(list_of_un_pw):
     
     
 def read_username_password_from_database():
+    """Write user information about ixia servers from database"""
     conn = _get_db_connection()
     cur = conn.cursor()
-    query = f"SELECT * FROM user_db;"
+    query = "SELECT * FROM user_db;"
     posts = cur.execute(query).fetchone()
     cur.close()
     conn.close()
@@ -205,28 +209,30 @@ def read_username_password_from_database():
 
 
 def creat_config_dict(list_of_un_pw):
+    """Helper funtions to assist with writing json into DB based on user ADD/DELETE"""
     config_now = read_username_password_from_database()
     # Converting String to List
     config = list_of_un_pw.split("\n")
     if config_now:
         config_now = json.loads(config_now)
         for item in config:
-            operation, ip, un, pw = item.split(",")
-            if operation == "DELETE":
-                for idx, chassis_config in enumerate(config_now):
-                    if ip == chassis_config["ip"]:
-                        del config_now[idx]
-                        print(f"defeted idx {idx}")
-                        break
-            elif operation == "ADD":
-                if ip not in [c["ip"] for c in config_now]:
-                    config_now.append({
-                                "ip": ip.strip(),
-                                "username": un.strip(),
-                                "password": pw.strip(),
-                            })
-            elif operation == "UPDATE":
-                pass
+            if item:
+                operation, ip, un, pw = item.split(",")
+                print(operation, ip, un, pw)
+                if operation == "DELETE":
+                    for idx, chassis_config in enumerate(config_now):
+                        if ip == chassis_config["ip"]:
+                            del config_now[idx]
+                            break
+                elif operation == "ADD":
+                    if ip not in [c["ip"] for c in config_now]:
+                        config_now.append({
+                                    "ip": ip.strip(),
+                                    "username": un.strip(),
+                                    "password": pw.strip(),
+                                })
+                elif operation == "UPDATE":
+                    pass
     else:
         for item in config:
             operation, ip, un, pw = item.split(",")
@@ -235,10 +241,10 @@ def creat_config_dict(list_of_un_pw):
                 "username": un.strip(),
                 "password": pw.strip(),
             })
-    print(config_now)
     return config_now
 
 def get_perf_metrics_from_db(ip):
+    """Fetch Ixia Chassis Performance Metrics"""
     conn = _get_db_connection()
     cur = conn.cursor()
     query = f"SELECT * FROM chassis_utilization_details where chassisIp='{ip}';"
@@ -248,6 +254,7 @@ def get_perf_metrics_from_db(ip):
     return posts
     
 def write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf, data_purge):
+    """Write the polling intervals for different data categories"""
     conn = _get_db_connection()
     cur = conn.cursor()
     
@@ -259,9 +266,10 @@ def write_polling_intervals_into_database(chassis, cards, ports, sensors, licens
     conn.close()
     
 def read_poll_setting_from_database():
+    """Read the polling intervals for different data categories"""
     conn = _get_db_connection()
     cur = conn.cursor()
-    query = f"SELECT * FROM poll_setting;"
+    query = "SELECT * FROM poll_setting;"
     posts = cur.execute(query).fetchone()
     cur.close()
     conn.close()
@@ -273,7 +281,7 @@ def delte_half_data_from_performace_metric_table():
     conn = _get_db_connection()
     cur = conn.cursor()
     
-    query = f"""DELETE FROM chassis_utilization_details 
+    query = """DELETE FROM chassis_utilization_details 
                 WHERE rowid IN 
                 (SELECT rowid FROM chassis_utilization_details  ORDER BY lastUpdatedAt_UTC DESC
                 LIMIT (SELECT COUNT(*)/2 FROM chassis_utilization_details));"""
@@ -281,7 +289,6 @@ def delte_half_data_from_performace_metric_table():
     conn.commit()
     cur.close()
     conn.close()
-    return "Half Records Deleted"
 
 def is_input_in_correct_format(ip_pw_list):
     for line in ip_pw_list.split("\n"):

@@ -1,42 +1,34 @@
+import json
 from flask import render_template, request, jsonify, redirect
 from app import create_app
+
 from  RestApi.IxOSRestInterface import IxRestSession
-from sqlite3_utilities import *
+from sqlite3_utilities import get_perf_metrics_from_db, read_username_password_from_database, read_data_from_database,read_tags, write_tags, is_input_in_correct_format, write_username_password_to_database, write_polling_intervals_into_database
 from data_poller import controller
-import json
+
 
 
 app = create_app()
 
-@app.post("/getLogs")
-def getlogs():
-    CHASSIS_LIST = json.loads(read_username_password_from_database())
-    input_json = request.get_json(force=True) 
-    chassis_ip = input_json['ip']
-    for chassis_item in CHASSIS_LIST:
-        if chassis_item["ip"] == chassis_ip:
-            chassis = chassis_item
-            break
-    session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"])
-    out = session.collect_chassis_logs(session)
-    return jsonify({"resultUrl" : out, "message": "Please login to your chassis and enter this url in browser to download logs"})
-
 
 @app.get('/uploadConfig')
-def uploadConfig():
+def upload_config():
     return render_template("upload.html")
 
 @app.post('/uploader')
 def processInput():
+    """Input checker to confirm if CSV entered by user is in correct format"""
     ip_pw_list = request.form['text']
-    if is_input_in_correct_format(ip_pw_list):
+    valid_input = is_input_in_correct_format(ip_pw_list)
+    if valid_input:
         write_username_password_to_database(ip_pw_list)
         return redirect('/')
     else:
-        return "<h3> Incorrect Input Formatting. Please check youe csv format and <a href='/uploadConfig'> retry</a></h3>"
+        return "<h3> Incorrect Input Formatting. Please check your csv format and <a href='/uploadConfig'> retry</a></h3>"
     
 @app.post('/setPollingIntervals')
-def setPollingIntervals():
+def set_polling_intervals():
+    """Flask method to set user provide intervals"""
     chassis = request.form['chassis']
     cards = request.form['cards']
     ports = request.form['ports']
@@ -49,13 +41,14 @@ def setPollingIntervals():
     
 @app.get('/')
 @app.get("/chassisDetails")
-def chassisDetails():
+def chassis_summary_details():
+    """Flask method to get Chassis Summary Details"""
     list_of_chassis = []
     headers = ["IP","OS","type","chassisSN","controllerSN", "# PhysicalCards", 
                "IxOS", "IxNetwork Protocols", "IxOS REST",
                "MemoryUsed", "TotalMemory", "%CPU Utilization", "Tags"]
 
-    ip_tags_dict = getTagsFromCurrentDatabase(type_of_update="chassis")
+    ip_tags_dict = read_tags(type_of_update="chassis")
     records = read_data_from_database(table_name="chassis_summary_details")
     for record in records:
         list_of_chassis.append({"chassisIp": record["ip"], 
@@ -73,14 +66,16 @@ def chassisDetails():
             "mem_bytes_total": record["mem_bytes_total"],
             "cpu_pert_usage": record["cpu_pert_usage"],
             "os": record["os"]})
-    return render_template("chassisDetails.html", headers=headers, rows = list_of_chassis, ip_tags_dict=ip_tags_dict)
+    return render_template("chassisDetails.html", headers=headers, rows = list_of_chassis, 
+                           ip_tags_dict=ip_tags_dict)
 
     
 @app.get("/cardDetails")
-def cardDetails():
+def chassis_card_details():
+    """Flask method to get Chassis Card Details"""
     list_of_cards = []
     headers = ["chassisIP", "ChassisType", "cardNumber", "serialNumber", "cardType", "numberOfPorts"]
-    ip_tags_dict = getTagsFromCurrentDatabase(type_of_update="card")
+    ip_tags_dict = read_tags(type_of_update="card")
     records = read_data_from_database(table_name="chassis_card_details")
     for record in records:
         list_of_cards.append([{"chassisIp": record["chassisIp"], 
@@ -96,7 +91,8 @@ def cardDetails():
 
 
 @app.get("/licenseDetails")
-def licenseDetails():
+def chassis_license_details():
+    """Flask method to get Chassis Licensing Details"""
     headers = ["chassisIP", "chassisType", "hostID", "partNumber", "activationCode", 
                "quantity", "description", "maintenanceDate", "expiryDate"]
     list_of_licenses= []
@@ -113,11 +109,13 @@ def licenseDetails():
                 "expiryDate":record["expiryDate"],
                 "isExpired": record["isExpired"],
                 "lastUpdatedAt_UTC": record["lastUpdatedAt_UTC"]}])        
-    return render_template("chassisLicenseDetails.html", headers=headers, rows = list_of_licenses)
+    return render_template("chassisLicenseDetails.html", headers=headers, 
+                           rows = list_of_licenses)
 
 
 @app.get("/portDetails")
 def get_chassis_ports_information():
+    """Flask method to get Chassis Card Port Details"""
     headers = ["chassisIp", "typeOfChassis",
                "cardNumber", "portNumber", "linkState", "isRunningTraffic", "phyMode", "transceiverModel", 
                "transceiverManufacturer","type", "speed", "owner"]
@@ -145,7 +143,8 @@ def get_chassis_ports_information():
 
 
 @app.get("/sensorInformation")
-def sensorInformation():
+def get_chassis_sensor_information():
+    """Flask method to get Chassis Sensor Details"""
     headers = ["chassisIP", "chassisType", "sensorType", "sensorName", "sensorValue", "unit"]
     sensor_list_details = []
     records = read_data_from_database(table_name="chassis_sensor_details")
@@ -162,32 +161,32 @@ def sensorInformation():
 
 
 @app.post("/addTags")
-def addTags():
+def add_tags():
+    """Flask method to add tags to chassis/cards"""
     input_json = request.get_json(force=True) 
     ip = input_json.get("ip")
     serialNumber = input_json.get("serialNumber")
     tags = input_json.get("tags")
     if ip:
-        resp = writeTags(ip, tags, type_of_update="chassis",operation="add")
+        resp = write_tags(ip, tags, type_of_update="chassis",operation="add")
         
     if serialNumber:
-        resp = writeTags(serialNumber, tags, type_of_update="card", operation="add")
-        
-        
+        resp = write_tags(serialNumber, tags, type_of_update="card", operation="add")
     return resp
 
 @app.post("/removeTags")
-def removeTags():
+def remove_tags():
+    """Flask method to remove tags to chassis/cards"""
     input_json = request.get_json(force=True) 
     ip = input_json.get("ip")
     serialNumber = input_json.get("serialNumber")
     
     tags = input_json.get("tags")
     if ip:
-        resp = writeTags(ip, tags, type_of_update="chassis",operation="remove")
-        
+        resp = write_tags(ip, tags, type_of_update="chassis",operation="remove")
+    
     if serialNumber:
-        resp = writeTags(serialNumber, tags, type_of_update="card", operation="remove")
+        resp = write_tags(serialNumber, tags, type_of_update="card", operation="remove")
     
     return resp
     
@@ -196,17 +195,17 @@ def removeTags():
 @app.get('/lineChartPerfMetrics')  
 @app.get('/lineChartPerfMetrics/<ip>')
 def lineChartPerfMetrics(ip):
-    
+    """Flask method to get performance metrics"""
     serv_list = read_username_password_from_database()
     if serv_list:
-        CHASSIS_LIST = json.loads(serv_list)
+        chassis_list = json.loads(serv_list)
         
     if ip=="fresh":
         return render_template('chassisPerformanceMetrics.html', title='Performance Metrics', 
-                            max=100, mem_values=[], 
-                            cpu_values=[], 
-                            date_timeline_value=[],
-                            chassis_list = CHASSIS_LIST)
+                                max=100, mem_values=[], 
+                                cpu_values=[], 
+                                date_timeline_value=[],
+                                chassis_list = chassis_list)
 
     elif ip:
         records = get_perf_metrics_from_db(str(ip))
@@ -223,12 +222,28 @@ def lineChartPerfMetrics(ip):
                                 cpu_values=cpu_values[-10:], 
                                 date_timeline_value=date_timeline_value[-10:],
                                 ip = ip,
-                                chassis_list = CHASSIS_LIST)
+                                chassis_list = chassis_list)
 
 @app.get("/pollLatestData/<category>")
 def pollLatestChassisData(category):
+    """Mthod to load latest data out of polling cycle"""
     controller(category_of_poll=category)
     return redirect(categoryToFuntionMap[category]) 
+
+@app.post("/getLogs")
+def getlogs():
+    """This flask method will start the async call to get logs from Ixia Chassis"""
+    chassis_list = json.loads(read_username_password_from_database())
+    input_json = request.get_json(force=True) 
+    chassis_ip = input_json['ip']
+    for chassis_item in chassis_list:
+        if chassis_item["ip"] == chassis_ip:
+            chassis = chassis_item
+            break
+    session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"])
+    out = session.collect_chassis_logs(session)
+    return jsonify({"resultUrl" : out, "message": "Please login to your chassis and enter this url in browser to download logs"})
+
 
 categoryToFuntionMap = {"chassis": "/chassisDetails",
                         "cards": "/cardDetails",
