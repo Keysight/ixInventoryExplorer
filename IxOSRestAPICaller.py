@@ -1,30 +1,9 @@
-"""
-Description
------------
-This tool belongs to Keysight Technologies
-
-This file implements code for collecting information from Ixia Chassis usinf Rest API's
-Reference: https://<chassis_ip>/chassis/swagger/index.html#/
-User has to pass a list or a string IP addresses. 
-It collects the below info from the chassis:
-    - chassis-model
-    - ixos-version
-    - license details (if any)
-    - ports
-    - cpu_utilization
-    - card-models
-"""
-
 import json
 import math
 from datetime import datetime, timezone
 
-
-
-def get_sensors_information(session):
-    out = session.get_sensors()
-
 def get_chassis_os(session):
+    """Method to get Chassis Type based on IP from Chassis DB"""
     try:
         port_list = session.get_ports().data
         #linkState field is only in Linux Based Chassis
@@ -35,21 +14,23 @@ def get_chassis_os(session):
         return "NA"
 
 def convert_size(size_bytes):
-   if size_bytes == 0:
-       return "0B"
-   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-   i = int(math.floor(math.log(size_bytes, 1024)))
-   p = math.pow(1024, i)
-   s = round(size_bytes / p, 2)
-   return "%s %s" % (s, size_name[i])
+    """Method to convert chassis size"""
+    if size_bytes == 0:
+        return "0B"
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 2)
+    return "%s %s" % (s, size_name[i])
 
 def get_perf_metrics(session, chassisIp):
+    """Method to get Performance Metrics from Ixia Chassis"""
     chassis_perf_dict = {}
     # Exception Handling for Windows Chassis
     perf = {}
     try:
         perf = session.get_perfcounters().data[0]
-    except:
+    except Exception:
         pass
     
     mem_bytes = int(perf.get("memoryInUseBytes", "0"))
@@ -80,7 +61,6 @@ def get_chassis_information(session):
     os = get_chassis_os(session)
     
     chassisInfo = session.get_chassis()
-    chassis_perf_dict = {}
     try:
         # Exception Handling for Windows Chassis
         perf = session.get_perfcounters().data[0]
@@ -120,8 +100,7 @@ def get_chassis_information(session):
     return chassis_filter_dict
     
 def get_chassis_cards_information(session, ip, type_of_chassis):
-    """_summary_
-    """
+    """Method to get chassis card information from Ixia Chassis using RestPy"""
     card_list= session.get_cards().data
     final_card_details_list= []
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
@@ -142,9 +121,7 @@ def get_chassis_cards_information(session, ip, type_of_chassis):
     return final_card_details_list
     
 def get_chassis_ports_information(session, chassisIp, chassisType):
-    """_summary_
-    """
-    
+    """Method to get chassis port information from Ixia Chassis using RestPy"""
     port_data_list = []
     used_port_details = []
     total_ports = 0
@@ -153,7 +130,7 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
     port_list = session.get_ports().data
     
-    keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode', 'linkState', 'speed', 'type', 'transmitState']
+    keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode', 'linkState', 'speed', 'type']
 
     if port_list:
         a = list(port_list[0].keys())
@@ -191,6 +168,7 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
 
         
 def get_license_activation(session, ip, type_chassis):
+    """Method to get license information from Ixia Chassis using RestPy"""
     host_id = session.get_license_server_host_id()
     license_info = session.get_license_activation().json()
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
@@ -212,6 +190,7 @@ def get_license_activation(session, ip, type_chassis):
 
 
 def get_sensor_information(session, chassis, type_chassis):
+    """Method to get sensor information from Ixia Chassis using RestPy"""
     sensor_list = session.get_sensors().json()
     keys_to_remove = ["criticalValue", "maxValue", 'parentId', 'id','adapterName','minValue','sensorSetName', 'cpuName']
     for record in sensor_list:

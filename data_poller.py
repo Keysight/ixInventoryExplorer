@@ -1,11 +1,11 @@
-from sqlite3_utilities import *
-import IxOSRestCallerModifier as ixOSRestCaller
-from RestApi.IxOSRestInterface import IxRestSession
 import click
 import time
 import json
 
 
+from sqlite3_utilities import read_username_password_from_database, write_data_to_database, get_chassis_type_from_ip, delte_half_data_from_performace_metric_table, read_poll_setting_from_database
+import IxOSRestAPICaller as ixOSRestCaller
+from RestApi.IxOSRestInterface import IxRestSession
 
 def get_chassis_summary_data():
     """This is a call to RestAPI to get chassis summary data
@@ -56,7 +56,7 @@ def get_chassis_card_data():
                 session = IxRestSession(
                     chassis["ip"], chassis["username"], chassis["password"], verbose=False)
                 out = ixOSRestCaller.get_chassis_cards_information(
-                    session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                    session, chassis["ip"], get_chassis_type_from_ip(chassis["ip"]))
                 list_of_cards.append(out)
             except Exception:
                 out = [{'chassisIp': chassis["ip"], 
@@ -86,7 +86,7 @@ def get_chassis_port_data():
                     session = IxRestSession(
                         chassis["ip"], chassis["username"], chassis["password"], verbose=False)
                     out = ixOSRestCaller.get_chassis_ports_information(
-                        session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                        session, chassis["ip"], get_chassis_type_from_ip(chassis["ip"]))
                     port_list_details.append(out)
                 except Exception:
                     a = [{
@@ -101,7 +101,7 @@ def get_chassis_port_data():
                         'ownedPorts': 'NA',
                         'freePorts': 'NA',
                         'chassisIp': chassis["ip"],
-                        'typeOfChassis': 'NA'
+                        'typeOfChassis': 'NA',
                         'transmitState': 'NA'
                     }]
                     port_list_details.append(a)
@@ -121,7 +121,7 @@ def get_chassis_licensing_data():
                 session = IxRestSession(
                     chassis["ip"], chassis["username"], chassis["password"], verbose=False)
                 out = ixOSRestCaller.get_license_activation(
-                    session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                    session, chassis["ip"], get_chassis_type_from_ip(chassis["ip"]))
                 list_of_licenses.append(out)
             except Exception:
                 a = [{
@@ -151,7 +151,7 @@ def get_sensor_information():
         for chassis in chassis_list:
             try:
                 session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"], verbose=False)
-                out = ixOSRestCaller.get_sensor_information(session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                out = ixOSRestCaller.get_sensor_information(session, chassis["ip"], get_chassis_type_from_ip(chassis["ip"]))
                 sensor_list_details.append(out)
             except Exception:
                 a =   [{
@@ -214,8 +214,8 @@ categoryToFuntionMap = {"chassis": get_chassis_summary_data,
 def start_poller(category, interval): 
     """Since not all the parameters are modified with same interval, this way, we can specify exactly what we want to monitor at what interval
   Args:
-        categoryOfPoll (_type_): _description_
-        frequencyInSeconds (_type_): _description_
+        category (_type_): _description_
+        interval (_type_): _description_
     """
     while True:
         poll_interval = read_poll_setting_from_database()
