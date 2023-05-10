@@ -44,7 +44,7 @@ Installation:
 **Pull Docker Image.** <br/>
 docker pull ashjo317/ixia:ixinventorymanager.0.0.11<br/>
 **Run Docker Image.** <br/>
-docker run -d –p 80:3000 ashjo317/ixia:ixinventorymanager. 0.0.11<br/>
+docker run -d –p 80:3000 ashjo317/ixia:ixinventorymanager.0.0.11<br/>
 
   
 Disclaimer:
