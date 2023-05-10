@@ -19,8 +19,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ghcr.io/ashjo317/ixiaInventoryExplorer:latest
-
-    - name: Push the Docker image
-      run: docker push ghcr.io/ashjo317/ixiaInventoryExplorer:latest
+      run: |
+       docker build . --tag ghcr.io/ashjo317/hello-docker-gcr-demo:latest
+       docker run ghcr.io/ashjo317/hello-docker-gcr-demo:latest
+       docker push ghcr.io/ashjo317/hello-docker-gcr-demo:latest
   
