@@ -22,7 +22,7 @@ jobs:
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ixinventorymanager.0.0.21
+      run: docker build . --file Dockerfile --tag ashjo317/ixia:ixinventorymanager.0.0.21
     
     - name: Push the Docker image
-      run: docker push ${{secrets.DOCKER_USER}}/ixia
+      run: docker push ashjo317/ixia:ixinventorymanager.0.0.21
