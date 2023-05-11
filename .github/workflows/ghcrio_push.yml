@@ -20,8 +20,8 @@ jobs:
           
     - name: Build the Docker image
       run: |
-        docker build . --tag ghcr.io/iie/ixiainventoryexplorer:latest
+        docker build . --tag ghcr.io/ashwinjo/ixiainventoryexplorer:latest
     - name: push image to GitHub Container Registry
       run: |
-        docker push ghcr.io/iie/ixiainventoryexplorer:latest
+        docker push ghcr.io/ashwinjo/ixiainventoryexplorer:latest
   
