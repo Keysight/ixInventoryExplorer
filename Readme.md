@@ -3,8 +3,8 @@ Project is UI written over open IxOS API's that we can find at https://github.co
 
 REST API references at
 
-https://(chassisIp)/chassis/swagger/index.html?v=1.3.0.822# <br/>
-https://(chassisIp)/platform/swagger/index.html?v=1.3.0.822#
+https://(chassisIp)/chassis/swagger/index.html <br/>
+https://(chassisIp)/platform/swagger/index.html
 
 
 
@@ -22,30 +22,36 @@ Ixia Inventor Explorer offers a range of features that make it an ideal tool for
 
 Some of the key features include:
 
-• Unified preview of available Ixia Chassis with custom tagging feature
-• License statistics for every Ixia Chassis 
-• Card Statistics with custom tagging feature
-• Port Statistics for owner, type of optic
-• One-click IxOS chassis log collection
-• Download Statistics as csv for Ixia Support Team 
-• On-demand data refresh 
-•Column based filtering.
+- Unified preview of available Ixia Chassis with custom tagging feature
+- License statistics for every Ixia Chassis 
+- Card Statistics with custom tagging feature
+- Port Statistics for owner, type of optic
+- One-click IxOS chassis log collection
+- Download Statistics as csv for Ixia Support Team 
+- On-demand data refresh 
+- Column based filtering.
 
 Prerequisites
 ==
 * Linux Server with docker installed
-* Linux server with internet access to Dockerhub CR
-* Linux Server with access to chassis to monitor
+* Linux server with internet access to https://github.com/Keysight/
+* Linux Server with access to chassis that one wants to monitor
 
-
-Installation:
+Installation and Running the tool:
 ==
 
 **Pull Docker Image.** <br/>
-docker pull ghcr.io/keysight/ixiainventoryexplorer:latest<br/>
-**Run Docker Image.** <br/>
-docker run -d –p 80:3000 ghcr.io/keysight/ixiainventoryexplorer:latest<br/>
+`docker pull ghcr.io/keysight/ixiainventoryexplorer:latest`
 
+** This is a `linux/amd64` type of docker image. If you need an image for different OS Architecture type, you will need to build it yourself from source code.
+
+
+**Run Docker Image.** <br/>
+`docker run -d –p 80:3000 ghcr.io/keysight/ixiainventoryexplorer:latest`
+
+Then, go to browser and http://host:port/ <br/>
+In this case host is where you are running the docker image and port is what you have specified while executing `docker run` command. 
+For instance, in the above installation, we have exposed port 80 on the host to run the tool.
   
 Disclaimer:
 ==
