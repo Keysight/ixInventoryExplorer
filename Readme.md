@@ -43,11 +43,17 @@ Installation and Running the tool:
 **Pull Docker Image.** <br/>
 `docker pull ghcr.io/keysight/ixiainventoryexplorer:latest`
 
-** This is a `linux/amd64` type of docker image. If you need an image for different OS Architecture type, you will need to build it yourself from source code.
+** This is a `linux/amd64` type of docker image. If you need an idea for different OS Architecture types, you must build it yourself from the source code.
 
+** Let us create volume to persist the data** <br/>
+`docker volume create <volume-name>`
+
+For instance: `docker volume create iie-data`
 
 **Run Docker Image.** <br/>
-`docker run -d –p 80:3000 ghcr.io/keysight/ixiainventoryexplorer:latest`
+
+`docker run -dp 80:3000 --mount type=volume,src=<volume-name>,target=/python-docker ghcr.io/keysight/ixiainventoryexplorer:latest` <br/>
+For instance: `docker run -dp 80:3000 --mount type=volume,src=iie-data,target=/python-docker ghcr.io/keysight/ixiainventoryexplorer:latest`
 
 Then, go to browser and http://host:port/ <br/>
 In this case host is where you are running the docker image and port is what you have specified while executing `docker run` command. 
