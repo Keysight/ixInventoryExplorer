@@ -53,7 +53,7 @@ For instance: `docker volume create iie-data`
 **Run Docker Image.** <br/>
 
 `docker run -dp 80:3000 --mount type=volume,src=<volume-name>,target=/python-docker ghcr.io/keysight/ixiainventoryexplorer:latest` <br/>
-For instance: `docker run -dp 80:3000 --mount type=volume,src=iie-data,target=/python-docker ghcr.io/keysight/ixiainventoryexplorer:latest`
+For instance: `docker run -dp 80:3000 --mount type=volume,src=iie-data,target=/python-docker ghcr.io/keysight/ixiainventoryexplorer:latest_1.0`
 
 Then, go to browser and http://host:port/ <br/>
 In this case host is where you are running the docker image and port is what you have specified while executing `docker run` command. 
